@@ -1,0 +1,1 @@
+tsでcliで動く絵文字の麻雀つくって　日本語環境　webでも同様に動くように　githubpages
