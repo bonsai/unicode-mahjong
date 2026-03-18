@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🀄 Emoji麻雀</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.5em;
+        }
+        
+        .game-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .info-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+        
+        .tiles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+            min-height: 80px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            position: relative;
+        }
+        
+        .tile {
+            width: 50px;
+            height: 70px;
+            background: linear-gradient(145deg, #f0f0f0 0%, #e0e0e0 100%);
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            user-select: none;
+        }
+        
+        .tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+            border-color: #ffd700;
+        }
+        
+        .tile.selected {
+            background: linear-gradient(145deg, #fff3cd 0%, #ffeaa7 100%);
+            border-color: #ffd700;
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        
+        .tile.discarded {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+        
+        .tile.pon, .tile.chi, .tile.kan {
+            background: linear-gradient(145deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(145deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(145deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+            min-height: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .yaku-list {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .yaku-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .log {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .wind-indicator {
+            font-size: 1.5em;
+            margin: 0 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .tile {
+                width: 40px;
+                height: 56px;
+                font-size: 1.5em;
+            }
+            h1 { font-size: 1.8em; }
+        }
+        
+        .cli-mode {
+            background: #1e1e1e;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <button class="mode-toggle btn-secondary" onclick="toggleMode()">🖥️ CLIモード切替</button>
+    
+    <h1>🀄 Emoji麻雀</h1>
+    
+    <div class="game-container" id="gameContainer">
+        <div class="info-panel">
+            <div class="info-box">
+                場風: <span class="wind-indicator" id="roundWind">🀀</span>
+            </div>
+            <div class="info-box">
+                自風: <span class="wind-indicator" id="seatWind">🀀</span>
+            </div>
+            <div class="info-box">
+                残り牌: <span id="remainingTiles">70</span>
+            </div>
+            <div class="info-box">
+                点数: <span id="score">25000</span>
+            </div>
+        </div>
+        
+        <div class="message" id="message">ゲームを開始してください</div>
+        
+        <div class="tiles-container" id="discardPile">
+            <div style="width:100%; text-align:center; opacity:0.7;">捨て牌</div>
+        </div>
+        
+        <div class="tiles-container" id="handTiles">
+            <div style="width:100%; text-align:center; opacity:0.7; margin-bottom:10px;">手牌 (クリックで選択)</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-primary" onclick="drawTile()">🎯 ツモ</button>
+            <button class="btn-secondary" onclick="discardSelected()" id="discardBtn" disabled>🗑️ 捨てる</button>
+            <button class="btn-primary" onclick="declareWin()" id="winBtn" disabled>🎉 和了</button>
+            <button class="btn-secondary" onclick="pon()" id="ponBtn" disabled>🔊 ポン</button>
+            <button class="btn-secondary" onclick="chi()" id="chiBtn" disabled>🌊 チー</button>
+            <button class="btn-danger" onclick="resetGame()">🔄 リセット</button>
+        </div>
+        
+        <div class="yaku-list" id="yakuList" style="display:none;">
+            <h3>役一覧</h3>
+            <div id="yakuContent"></div>
+        </div>
+        
+        <div class="log" id="gameLog">
+            <div class="log-entry">ゲーム準備完了...</div>
+        </div>
+    </div>
+    
+    <div class="cli-mode" id="cliOutput"></div>
+
+    <script>
+        // 麻雀牌のUnicode定義
+        const TILES = {
+            // 萬子 (Characters)
+            M1: '🀇', M2: '🀈', M3: '🀉', M4: '🀊', M5: '🀋',
+            M6: '🀌', M7: '🀍', M8: '🀎', M9: '🀏',
+            // 筒子 (Circles)
+            P1: '🀙', P2: '🀚', P3: '🀛', P4: '🀜', P5: '🀝',
+            P6: '🀞', P7: '🀟', P8: '🀠', P9: '🀡',
+            // 索子 (Bamboo)
+            S1: '🀐', S2: '🀑', S3: '🀒', S4: '🀓', S5: '🀔',
+            S6: '🀕', S7: '🀖', S8: '🀗', S9: '🀘',
+            // 字牌 (Honors)
+            EAST: '🀀', SOUTH: '🀁', WEST: '🀂', NORTH: '🀃',
+            WHITE: '🀆', GREEN: '🀅', RED: '🀄',
+            // 裏向き
+            BACK: '🀫'
+        };
+
+        const WINDS = [TILES.EAST, TILES.SOUTH, TILES.WEST, TILES.NORTH];
+        
+        class MahjongGame {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.wall = this.createWall();
+                this.hands = [[], [], [], []]; // 4人分
+                this.discards = [[], [], [], []];
+                this.melds = [[], [], [], []]; // 副露
+                this.currentPlayer = 0;
+                this.roundWind = 0; // 東場
+                this.seatWinds = [0, 1, 2, 3];
+                this.scores = [25000, 25000, 25000, 25000];
+                this.selectedTile = null;
+                this.gameState = 'waiting'; // waiting, playing, ended
+                this.turnCount = 0;
+                this.lastDiscard = null;
+                this.dora = null;
+                
+                this.shuffle();
+                this.deal();
+            }
+            
+            createWall() {
+                const wall = [];
+                const suits = ['M', 'P', 'S'];
+                
+                // 数牌（各4枚）
+                suits.forEach(suit => {
+                    for (let i = 1; i <= 9; i++) {
+                        for (let j = 0; j < 4; j++) {
+                            wall.push({
+                                type: suit,
+                                value: i,
+                                emoji: TILES[`${suit}${i}`],
+                                id: `${suit}${i}_${j}`
+                            });
+                        }
+                    }
+                });
+                
+                // 字牌（各4枚）
+                const honors = [
+                    {type: 'W', value: 1, emoji: TILES.EAST},
+                    {type: 'W', value: 2, emoji: TILES.SOUTH},
+                    {type: 'W', value: 3, emoji: TILES.WEST},
+                    {type: 'W', value: 4, emoji: TILES.NORTH},
+                    {type: 'H', value: 1, emoji: TILES.WHITE},
+                    {type: 'H', value: 2, emoji: TILES.GREEN},
+                    {type: 'H', value: 3, emoji: TILES.RED}
+                ];
+                
+                honors.forEach(h => {
+                    for (let j = 0; j < 4; j++) {
+                        wall.push({...h, id: `H${h.value}_${j}`});
+                    }
+                });
+                
+                return wall;
+            }
+            
+            shuffle() {
+                for (let i = this.wall.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.wall[i], this.wall[j]] = [this.wall[j], this.wall[i]];
+                }
+                
+                // 王牌（嶺上）を分離
+                this.deadWall = this.wall.splice(0, 14);
+                this.dora = this.deadWall[0];
+            }
+            
+            deal() {
+                // 各プレイヤーに13枚配布
+                for (let p = 0; p < 4; p++) {
+                    for (let i = 0; i < 13; i++) {
+                        this.hands[p].push(this.wall.pop());
+                    }
+                    this.sortHand(p);
+                }
+            }
+            
+            sortHand(player) {
+                const suitOrder = {'M': 0, 'P': 1, 'S': 2, 'W': 3, 'H': 4};
+                this.hands[player].sort((a, b) => {
+                    if (suitOrder[a.type] !== suitOrder[b.type]) {
+                        return suitOrder[a.type] - suitOrder[b.type];
+                    }
+                    return a.value - b.value;
+                });
+            }
+            
+            draw(player = this.currentPlayer) {
+                if (this.wall.length === 0) return null;
+                const tile = this.wall.pop();
+                this.hands[player].push(tile);
+                this.sortHand(player);
+                return tile;
+            }
+            
+            discard(player, tileIndex) {
+                if (tileIndex >= this.hands[player].length) return null;
+                const tile = this.hands[player].splice(tileIndex, 1)[0];
+                this.discards[player].push(tile);
+                this.lastDiscard = {tile, player};
+                return tile;
+            }
+            
+            canPon(player, tile) {
+                const count = this.hands[player].filter(t => 
+                    t.type === tile.type && t.value === tile.value
+                ).length;
+                return count >= 2;
+            }
+            
+            canChi(player, tile) {
+                if (tile.type === 'W' || tile.type === 'H') return false;
+                const vals = this.hands[player]
+                    .filter(t => t.type === tile.type)
+                    .map(t => t.value);
+                
+                const v = tile.value;
+                // 連続した3つの組み合わせをチェック
+                return (vals.includes(v-2) && vals.includes(v-1)) ||
+                       (vals.includes(v-1) && vals.includes(v+1)) ||
+                       (vals.includes(v+1) && vals.includes(v+2));
+            }
+            
+            pon(player, tile) {
+                const matches = this.hands[player]
+                    .filter(t => t.type === tile.type && t.value === tile.value)
+                    .slice(0, 2);
+                
+                if (matches.length < 2) return false;
+                
+                // 手牌から削除
+                this.hands[player] = this.hands[player].filter(t => 
+                    !matches.includes(t) || t !== matches[0] && t !== matches[1]
+                );
+                
+                this.melds[player].push({
+                    type: 'pon',
+                    tiles: [...matches, tile]
+                });
+                
+                return true;
+            }
+            
+            chi(player, tile, sequence) {
+                // sequence: [v-2, v-1], [v-1, v+1], or [v+1, v+2]
+                const tiles = sequence.map(v => 
+                    this.hands[player].find(t => 
+                        t.type === tile.type && t.value === v
+                    )
+                );
+                
+                if (tiles.some(t => !t)) return false;
+                
+                // 手牌から削除
+                tiles.forEach(t => {
+                    const idx = this.hands[player].indexOf(t);
+                    this.hands[player].splice(idx, 1);
+                });
+                
+                this.melds[player].push({
+                    type: 'chi',
+                    tiles: [...tiles, tile]
+                });
+                
+                return true;
+            }
+            
+            checkWin(player) {
+                const hand = [...this.hands[player]];
+                const melds = this.melds[player];
+                
+                // 簡易的な和了判定（4面子1雀頭）
+                return this.isComplete(hand, melds);
+            }
+            
+            isComplete(hand, melds) {
+                // 簡易実装: 14枚で構成されているかチェック
+                const totalTiles = hand.length + melds.length * 3;
+                if (totalTiles !== 14 && totalTiles !== 13) return false;
+                
+                // 雀頭（対子）の存在確認
+                const pairs = this.findPairs(hand);
+                if (pairs.length === 0 && totalTiles === 13) return false;
+                
+                // 簡易チェック: 実際の麻雀ロジックは複雑なため、ここでは確率で和了とする
+                // 実際の実装では牌の組み合わせを再帰的にチェックする必要がある
+                return this.canFormMelds(hand, pairs[0]);
+            }
+            
+            findPairs(hand) {
+                const pairs = [];
+                for (let i = 0; i < hand.length - 1; i++) {
+                    if (hand[i].type === hand[i+1].type && 
+                        hand[i].value === hand[i+1].value) {
+                        pairs.push(i);
+                    }
+                }
+                return pairs;
+            }
+            
+            canFormMelds(hand, pairIndex) {
+                // 簡易実装: 残りの牌が面子を形成できるかチェック
+                // 実際の麻雀では複雑な判定が必要
+                const remaining = hand.filter((_, i) => 
+                    i !== pairIndex && i !== pairIndex + 1
+                );
+                
+                // ここでは簡易的に常にtrueを返す（デモ用）
+                // 実際のゲームでは真面目な面子判定が必要
+                return remaining.length % 3 === 0;
+            }
+            
+            calculateScore(player) {
+                // 簡易的な点数計算
+                let han = 1; // 平和など基本役
+                if (this.melds[player].length === 0) han += 1; // 門前清
+                
+                // 役牌チェック
+                const yakuhai = this.melds[player].some(m => 
+                    m.tiles.some(t => t.type === 'H' || t.type === 'W')
+                );
+                if (yakuhai) han += 1;
+                
+                return {han, fu: 30, score: han * 1000};
+            }
+            
+            nextTurn() {
+                this.currentPlayer = (this.currentPlayer + 1) % 4;
+                this.turnCount++;
+            }
+        }
+
+        // ゲームインスタンス
+        let game = new MahjongGame();
+        let isCliMode = false;
+
+        // UI更新
+        function updateUI() {
+            // 手牌表示
+            const handContainer = document.getElementById('handTiles');
+            handContainer.innerHTML = '<div style="width:100%; text-align:center; opacity:0.7; margin-bottom:10px;">手牌 (クリックで選択)</div>';
+            
+            game.hands[0].forEach((tile, index) => {
+                const div = document.createElement('div');
+                div.className = 'tile';
+                div.textContent = tile.emoji;
+                div.onclick = () => selectTile(index);
+                if (game.selectedTile === index) {
+                    div.classList.add('selected');
+                }
+                handContainer.appendChild(div);
+            });
+            
+            // 捨て牌表示
+            const discardContainer = document.getElementById('discardPile');
+            discardContainer.innerHTML = '<div style="width:100%; text-align:center; opacity:0.7;">捨て牌</div>';
+            
+            game.discards.forEach((discards, player) => {
+                discards.forEach(tile => {
+                    const div = document.createElement('div');
+                    div.className = 'tile discarded';
+                    div.textContent = tile.emoji;
+                    div.style.opacity = player === 0 ? '1' : '0.6';
+                    div.style.transform = `rotate(${player * 90}deg) scale(0.8)`;
+                    discardContainer.appendChild(div);
+                });
+            });
+            
+            // 情報更新
+            document.getElementById('roundWind').textContent = WINDS[game.roundWind];
+            document.getElementById('seatWind').textContent = WINDS[game.seatWinds[0]];
+            document.getElementById('remainingTiles').textContent = game.wall.length;
+            document.getElementById('score').textContent = game.scores[0];
+            
+            // ボタン状態更新
+            document.getElementById('discardBtn').disabled = game.selectedTile === null;
+            document.getElementById('winBtn').disabled = !game.checkWin(0);
+            
+            // ポン・チー可能判定
+            const lastDiscard = game.lastDiscard;
+            document.getElementById('ponBtn').disabled = !lastDiscard || !game.canPon(0, lastDiscard.tile);
+            document.getElementById('chiBtn').disabled = !lastDiscard || !game.canChi(0, lastDiscard.tile);
+        }
+
+        function selectTile(index) {
+            game.selectedTile = game.selectedTile === index ? null : index;
+            updateUI();
+        }
+
+        function drawTile() {
+            const tile = game.draw(0);
+            if (tile) {
+                log(`ツモ: ${tile.emoji}`);
+                if (game.checkWin(0)) {
+                    showMessage('🎉 ツモ和了の可能性があります！');
+                }
+            } else {
+                showMessage('山札が尽きました - 流局');
+            }
+            updateUI();
+        }
+
+        function discardSelected() {
+            if (game.selectedTile === null) return;
+            
+            const tile = game.discard(0, game.selectedTile);
+            log(`捨て牌: ${tile.emoji}`);
+            game.selectedTile = null;
+            
+            // AIのターン
+            setTimeout(aiTurn, 500);
+            updateUI();
+        }
+
+        function aiTurn() {
+            for (let p = 1; p < 4; p++) {
+                game.draw(p);
+                // 簡易AI: ランダムに捨てる
+                const discardIdx = Math.floor(Math.random() * game.hands[p].length);
+                const tile = game.discard(p, discardIdx);
+                log(`Player ${p+1} 捨て: ${tile.emoji}`);
+            }
+            updateUI();
+        }
+
+        function declareWin() {
+            if (game.checkWin(0)) {
+                const score = game.calculateScore(0);
+                showMessage(`🎉 和了！ ${score.han}翻 ${score.fu}符 ${score.score}点`);
+                log(`和了成立: ${score.han}翻 ${score.score}点`);
+                game.scores[0] += score.score;
+                
+                // 役表示
+                const yakuDiv = document.getElementById('yakuList');
+                const yakuContent = document.getElementById('yakuContent');
+                yakuContent.innerHTML = `
+                    <div class="yaku-item"><span>平和</span><span>1翻</span></div>
+                    <div class="yaku-item"><span>門前清自摸和</span><span>1翻</span></div>
+                `;
+                yakuDiv.style.display = 'block';
+            }
+            updateUI();
+        }
+
+        function pon() {
+            if (!game.lastDiscard) return;
+            if (game.pon(0, game.lastDiscard.tile)) {
+                log(`ポン: ${game.lastDiscard.tile.emoji}`);
+                game.lastDiscard = null;
+                updateUI();
+            }
+        }
+
+        function chi() {
+            if (!game.lastDiscard) return;
+            const tile = game.lastDiscard.tile;
+            const hand = game.hands[0];
+            
+            // 可能な順子を探す
+            const v = tile.value;
+            const sameSuit = hand.filter(t => t.type === tile.type);
+            const vals = sameSuit.map(t => t.value);
+            
+            let sequence = null;
+            if (vals.includes(v-2) && vals.includes(v-1)) sequence = [v-2, v-1];
+            else if (vals.includes(v-1) && vals.includes(v+1)) sequence = [v-1, v+1];
+            else if (vals.includes(v+1) && vals.includes(v+2)) sequence = [v+1, v+2];
+            
+            if (sequence && game.chi(0, tile, sequence)) {
+                log(`チー: ${tile.emoji} [${sequence.join(',')}]`);
+                game.lastDiscard = null;
+                updateUI();
+            }
+        }
+
+        function resetGame() {
+            game = new MahjongGame();
+            document.getElementById('yakuList').style.display = 'none';
+            log('ゲームをリセットしました');
+            updateUI();
+        }
+
+        function showMessage(msg) {
+            document.getElementById('message').textContent = msg;
+        }
+
+        function log(msg) {
+            const logDiv = document.getElementById('gameLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString('ja-JP')}] ${msg}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+
+        function toggleMode() {
+            isCliMode = !isCliMode;
+            const cliDiv = document.getElementById('cliOutput');
+            const gameDiv = document.getElementById('gameContainer');
+            
+            if (isCliMode) {
+                cliDiv.style.display = 'block';
+                gameDiv.style.display = 'none';
+                renderCli();
+            } else {
+                cliDiv.style.display = 'none';
+                gameDiv.style.display = 'block';
+            }
+        }
+
+        function renderCli() {
+            const cli = document.getElementById('cliOutput');
+            let output = '🀄 EMOJI MAHJONG CLI v1.0\n';
+            output += '========================\n\n';
+            output += `場風: ${game.roundWind} | 自風: ${game.seatWinds[0]} | 残り: ${game.wall.length}枚\n`;
+            output += `点数: ${game.scores[0]}\n\n`;
+            
+            output += '【手牌】\n';
+            game.hands[0].forEach((t, i) => {
+                output += `${i}:${t.emoji} `;
+                if ((i+1) % 9 === 0) output += '\n';
+            });
+            output += '\n\n';
+            
+            output += '【捨て牌】\n';
+            game.discards.forEach((d, p) => {
+                output += `P${p+1}: ${d.map(t => t.emoji).join(' ')}\n`;
+            });
+            
+            output += '\n【コマンド】draw(d) | discard(数字) | pon | chi | win | reset\n';
+            cli.textContent = output;
+        }
+
+        // CLIコマンド処理
+        document.addEventListener('keydown', (e) => {
+            if (!isCliMode) return;
+            
+            if (e.key === 'd') drawTile();
+            if (e.key === 'r') resetGame();
+            if (e.key >= '0' && e.key <= '9') {
+                const idx = parseInt(e.key);
+                if (idx < game.hands[0].length) {
+                    game.selectedTile = idx;
+                    discardSelected();
+                }
+            }
+            
+            renderCli();
+        });
+
+        // 初期化
+        updateUI();
+        log('ゲーム開始準備完了');
+    </script>
+</body>
+</html>
