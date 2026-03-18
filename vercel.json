@@ -1,6 +1,6 @@
 {
-  "installCommand": "bash vercel-build.sh",
-  "buildCommand": "echo 'Build completed in build script'",
+  "installCommand": "npm install --prefix qwen",
+  "buildCommand": "npm run build --prefix qwen && cp qwen/index.html qwen/dist/ && cp qwen/package.json qwen/dist/",
   "outputDirectory": "qwen/dist",
   "framework": null
 }

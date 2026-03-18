@@ -275,24 +275,16 @@ function runCLI(): void {
 
 // --- Web Interface ---
 
-declare global {
-  interface Window {
-    mahjongGame: MahjongGame | null;
-    initWebGame: () => void;
-    discardTile: (index: number) => void;
-  }
-}
-
 function initWebGame(): void {
   const game = new MahjongGame();
   game.startGame();
-  window.mahjongGame = game;
-  
+  (window as any).mahjongGame = game;
+
   updateWebDisplay();
 }
 
 function discardTile(index: number): void {
-  const game = window.mahjongGame;
+  const game = (window as any).mahjongGame as MahjongGame | null;
   if (!game) return;
   
   const isWin = game.discardTile(index);
@@ -304,7 +296,7 @@ function discardTile(index: number): void {
 }
 
 function updateWebDisplay(): void {
-  const game = window.mahjongGame;
+  const game = (window as any).mahjongGame as MahjongGame | null;
   if (!game) return;
   
   const handContainer = document.getElementById('hand');
@@ -348,10 +340,7 @@ if (isNode && !isBrowser) {
   runCLI();
 } else if (isBrowser) {
   // Web mode - expose functions globally
-  window.mahjongGame = null;
-  window.initWebGame = initWebGame;
-  window.discardTile = discardTile;
+  (window as any).mahjongGame = null;
+  (window as any).initWebGame = initWebGame;
+  (window as any).discardTile = discardTile;
 }
-
-// Export for module usage
-export { MahjongGame, Tile, initWebGame, discardTile };
