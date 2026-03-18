@@ -1,0 +1,34 @@
+{
+  "name": "unicode-mahjong",
+  "version": "1.0.0",
+  "description": "Universal Emoji Mahjong - CLI and Web",
+  "main": "dist/index.js",
+  "bin": {
+    "mahjong": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "serve": "npx http-server -p 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bonsai/unicode-mahjong.git"
+  },
+  "keywords": [
+    "mahjong",
+    "emoji",
+    "unicode",
+    "game",
+    "cli",
+    "web"
+  ],
+  "author": "bonsai",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

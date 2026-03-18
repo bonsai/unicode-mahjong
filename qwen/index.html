@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>絵文字麻雀</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #1a5f2a 0%, #0d3d1f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hand-area {
+            margin-bottom: 20px;
+        }
+        
+        .hand-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .hand {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .tile-button {
+            font-size: 2.5rem;
+            padding: 10px 15px;
+            border: 3px solid #8b4513;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #f5f5dc, #e8e8c8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .tile-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            background: linear-gradient(145deg, #fffdd0, #f0f0d0);
+        }
+        
+        .tile-button.newest-tile {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+        
+        .discarded-area {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .discarded-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .discarded {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .discarded-tile {
+            font-size: 2rem;
+            opacity: 0.8;
+            padding: 5px;
+        }
+        
+        .info-area {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        #deck-count {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-button {
+            font-size: 1rem;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+        
+        .restart-button {
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .restart-button:hover {
+            background: linear-gradient(145deg, #5CB860, #50b059);
+            transform: translateY(-2px);
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        
+        .instructions h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tile-button {
+                font-size: 2rem;
+                padding: 8px 10px;
+            }
+            
+            .discarded-tile {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🀄 絵文字麻雀 🀄</h1>
+        <p class="subtitle">Universal Emoji Mahjong - CLI & Web</p>
+        
+        <div class="game-area">
+            <div class="hand-area">
+                <h2 class="hand-title">你的手牌</h2>
+                <div id="hand" class="hand">
+                    <!-- Tiles will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="discarded-area">
+                <h2 class="discarded-title">捨て牌</h2>
+                <div id="discarded" class="discarded">
+                    <!-- Discarded tiles will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="info-area">
+                <div id="deck-count">残り牌数：--枚</div>
+                <div class="controls">
+                    <button class="control-button restart-button" onclick="initWebGame()">
+                        🔄 ゲームを再開
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>🎮 遊び方</h3>
+            <ul>
+                <li>手牌から捨てる牌をクリックしてください</li>
+                <li>自動的に新しい牌をツモります</li>
+                <li>🀄 絵文字は Unicode 麻将牌です</li>
+                <li>萬子 (🀇-🀏)、筒子 (🀙-🀡)、索子 (🀐-🀘)、字牌 (東西南北白發中)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="./dist/index.js"></script>
+    <script>
+        // Initialize the game when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initWebGame === 'function') {
+                initWebGame();
+            }
+        });
+    </script>
+</body>
+</html>

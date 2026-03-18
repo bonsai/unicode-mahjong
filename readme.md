@@ -1,20 +1,51 @@
-絵文字麻雀（Emoji Mahjong）とは
-Unicode麻雀牌を使用した麻雀ゲームのことです。U+1F000～U+1F02Fの範囲に44個の麻雀牌文字が定義されています：
-Table
-種類	絵文字	Unicode
-風牌	🀀🀁🀂🀃	東南西北
-三元牌	🀄🀅🀆	白發中
-萬子	🀇-🀏	1-9萬
-索子	🀐-🀘	1-9索
-筒子	🀙-🀡	1-9筒
-花牌	🀢-🀩	春夏秋冬・梅蘭竹菊
-裏向き	🀫	牌背
-既存実装例
-Mahjong Solitaire - 絵文字を使った上海（麻雀ソリティア）ゲーム。黒い枠線で装飾した牌を使用し、レベル制の動的生成に対応
-上海アプリ - AI（Claude 3.7 Sonnet）が生成したJavaScript製上海ゲーム。タイマー・ヒント・シャッフル機能付き
-gomah - Go言語製の麻雀牌→絵文字変換ライブラリ
-実装上の注意点
-Variation Selector: 🀄はデフォルトで絵文字スタイル（🀄️）だが、テキストスタイル（🀄︎）に変更可能
-フォント依存: 表示される牌のデザインはOS/フォントによって異なる
-GitHub Pages: シングルHTMLファイルで完結可能
-既存の実装を参考に、TypeScriptでCLI/Web両対応の本格麻雀（4人打ち）を作るのは十分可能です。前回提示したコードはこのUnicode牌を使用した実装例です。
+# Unicode Mahjong Monorepo
+
+絵文字麻雀 (Emoji Mahjong) のモノレポポジトリ
+
+## 構成
+
+```
+unicode-mahjong/
+├── kimi/       - Kimi 版
+├── deepseek/   - DeepSeek 版
+├── qwen/       - Qwen 版 (TypeScript CLI & Web)
+└── prompt.txt  - 共通プロンプト
+```
+
+## 各バージョンの説明
+
+### qwen/
+TypeScript で作成したユニバーサル麻雀ゲーム
+- **CLI**: ターミナルで動作
+- **Web**: ブラウザで動作
+- **GitHub Pages**: 自動デプロイ対応
+
+[qwen/README.md](./qwen/README.md) を参照
+
+### kimi/
+Kimi による実装バージョン
+
+### deepseek/
+DeepSeek による実装バージョン
+
+## 使い方 (qwen 版)
+
+```bash
+cd qwen
+npm install
+npm run build
+npm start        # CLI 版
+npm run serve    # Web 版 (http://localhost:8080)
+```
+
+## GitHub Pages デプロイ (qwen 版)
+
+qwen フォルダをデプロイします：
+
+```bash
+cd qwen
+npm run build
+# GitHub Actions が自動デプロイ
+```
+
+または、GitHub Pages の設定で **Source folder** を `/qwen` に設定してください。
