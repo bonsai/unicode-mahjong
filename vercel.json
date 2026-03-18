@@ -1,7 +1,6 @@
 {
-  "outputDirectory": "qwen",
-  "installCommand": "cd qwen && npm install",
-  "buildCommand": "cd qwen && npm run build",
-  "devCommand": "cd qwen && npm run serve",
+  "installCommand": "npm install --prefix qwen",
+  "buildCommand": "npm run build --prefix qwen",
+  "outputDirectory": "qwen/dist",
   "framework": null
 }
